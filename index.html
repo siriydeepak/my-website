@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Categories</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        transition: 0.3s;
+    }
+
+    :root {
+        --bg: #ffffff;
+        --text: #000000;
+        --card: #f5f5f5;
+    }
+    body.dark {
+        --bg: #121212;
+        --text: #ffffff;
+        --card: #1e1e1e;
+    }
+
+    .container {
+        padding: 20px;
+        max-width: 900px;
+        margin: auto;
+        text-align: center;
+    }
+
+    .btn {
+        background: #4CAF50;
+        color: white;
+        padding: 14px;
+        margin: 12px 0;
+        width: 260px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: 0.3s;
+    }
+    .btn:hover {
+        background: #45a049;
+        transform: scale(1.05);
+    }
+
+    .item {
+        background: var(--card);
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 10px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        animation: fadeIn 0.5s;
+    }
+
+    .item img {
+        width: 120px;
+        height: 120px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    #itemsPage { display: none; }
+
+    #searchBar {
+        width: 80%;
+        padding: 10px;
+        margin: 15px 0;
+        border-radius: 8px;
+        border: 1px solid #aaa;
+        font-size: 16px;
+    }
+
+    .toggle-dark {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        padding: 10px 14px;
+        background: #000;
+        color: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="toggle-dark" onclick="toggleDarkMode()">🌙 Dark Mode</div>
+
+<div class="container">
+
+    <!-- MAIN PAGE -->
+    <div id="mainPage">
+        <h1>Select a Category</h1>
+
+        <button class="btn" onclick="showItems('sports')">🏅 Sports Items</button>
+        <button class="btn" onclick="showItems('clothes')">👕 Clothes</button>
+        <button class="btn" onclick="showItems('kitchen')">🍳 Kitchen Items</button>
+        <button class="btn" onclick="showItems('stationery')">✏️ Stationery</button>
+    </div>
+
+    <!-- ITEMS PAGE -->
+    <div id="itemsPage">
+        <h2 id="categoryTitle"></h2>
+
+        <input id="searchBar" placeholder="Search items..." onkeyup="filterItems()">
+
+        <div id="itemsList"></div>
+
+        <button class="btn" onclick="goBack()">⬅ Back</button>
+    </div>
+
+</div>
+
+<script>
+    // UPDATED DATA WITH PROPER IMAGES + PRICES
+    const data = {
+
+        sports: [
+            { name: "Football", desc: "High-quality leather football.", price: "₹799",
+              stock: "In Stock", img: "https://images.unsplash.com/photo-1599058917212-d750089bc07c" },
+
+            { name: "Cricket Bat", desc: "Wooden bat suitable for casual/pro play.", price: "₹1499",
+              stock: "Limited Stock", img: "https://images.unsplash.com/photo-1599058585572-365f02fd0f72" },
+
+            { name: "Badminton Racket", desc: "Lightweight graphite racket.", price: "₹999",
+              stock: "Out of Stock", img: "https://images.unsplash.com/photo-1521412644187-c49fa049e84d" }
+        ],
+
+        clothes: [
+            { name: "Cotton T-Shirt", desc: "Soft & breathable cotton T-shirt.", price: "₹299",
+              stock: "In Stock", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab" },
+
+            { name: "Denim Jeans", desc: "Slim-fit stretchable denim jeans.", price: "₹1099",
+              stock: "Out of Stock", img: "https://images.unsplash.com/photo-1542273917363-3b1817f69a2d" },
+
+            { name: "Winter Jacket", desc: "Warm and stylish winter jacket.", price: "₹1999",
+              stock: "Limited Stock", img: "https://images.unsplash.com/photo-1618354691793-6abdb9ca7eca" }
+        ],
+
+        kitchen: [
+            { name: "Non-stick Frying Pan", desc: "Premium non-stick 28cm frying pan.", price: "₹899",
+              stock: "In Stock", img: "https://images.unsplash.com/photo-1601050690597-df056f55c38f" },
+
+            { name: "Pressure Cooker", desc: "Durable stainless steel cooker.", price: "₹1599",
+              stock: "In Stock", img: "https://images.unsplash.com/photo-1601049676860-c68f7e910c1a" },
+
+            { name: "Mixer Grinder", desc: "Powerful 3-jar mixer blender.", price: "₹2499",
+              stock: "Out of Stock", img: "https://images.unsplash.com/photo-1621939514649-280831fbbe8e" }
+        ],
+
+        stationery: [
+            { name: "Notebook", desc: "200-page ruled notebook.", price: "₹60",
+              stock: "In Stock", img: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f" },
+
+            { name: "Ball Pens Pack", desc: "Pack of 10 smooth blue pens.", price: "₹50",
+              stock: "Limited Stock", img: "https://images.unsplash.com/photo-1588420343618-a3bd7aeca0e1" },
+
+            { name: "Geometry Box", desc: "Compass, scale, and protractor set.", price: "₹120",
+              stock: "Out of Stock", img: "https://images.unsplash.com/photo-1580983561371-5b66e4f8590f" }
+        ]
+    };
+
+    let currentCategory = "";
+
+    function showItems(category) {
+        currentCategory = category;
+        document.getElementById("mainPage").style.display = "none";
+        document.getElementById("itemsPage").style.display = "block";
+
+        document.getElementById("categoryTitle").innerText =
+            category.charAt(0).toUpperCase() + category.slice(1) + " Items";
+
+        loadItems();
+    }
+
+    function loadItems() {
+        let html = "";
+        data[currentCategory].forEach(item => {
+            html += `
+                <div class="item">
+                    <img src="${item.img}">
+                    <div>
+                        <h3>${item.name}</h3>
+                        <p>${item.desc}</p>
+                        <p><strong>Price: ${item.price}</strong></p>
+                        <strong>Availability: ${item.stock}</strong>
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById("itemsList").innerHTML = html;
+    }
+
+    function filterItems() {
+        const query = document.getElementById("searchBar").value.toLowerCase();
+
+        const items = data[currentCategory].filter(item =>
+            item.name.toLowerCase().includes(query)
+        );
+
+        let html = "";
+        items.forEach(item => {
+            html += `
+                <div class="item">
+                    <img src="${item.img}">
+                    <div>
+                        <h3>${item.name}</h3>
+                        <p>${item.desc}</p>
+                        <p><strong>Price: ${item.price}</strong></p>
+                        <strong>Availability: ${item.stock}</strong>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById("itemsList").innerHTML = html;
+    }
+
+    function goBack() {
+        document.getElementById("itemsPage").style.display = "none";
+        document.getElementById("mainPage").style.display = "block";
+        document.getElementById("searchBar").value = "";
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark");
+    }
+</script>
+
+</body>
+</html>
